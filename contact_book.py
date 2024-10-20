@@ -2,13 +2,19 @@ class UserContact:
     
     def __init__(self,
                  name: str,
-                 phone_number: str,
+                 phone_number: str = "",
                  description: str = "",
                  ):
         self.name = name
         self.phone_number = phone_number
         self.description = description
     
+    def set_phone_number(self, phone_number: str):
+        self.phone_number = phone_number
+    
+    def set_description(self, description: str):
+        self.description = description
+
     def __str__(self):
         return f"Имя: {self.name}, номер телефона: {self.phone_number}"
 
@@ -18,11 +24,7 @@ class ContactBook:
     def __init__(self) -> None:
         self.contacts = []
 
-    def add_contact(self,
-                    name: str,
-                    phone_number: str,
-                    description: str = ""):
-        contact = UserContact(name, phone_number, description)
+    def add_contact(self, contact: UserContact):
         self.contacts.append(contact)
 
     def find_contact(self, name: str):
@@ -40,15 +42,30 @@ class ContactBook:
 
 class ContactBuilder:
 
-    def add_name(self, name: str):
-        ...
+    def __init__(self):
+        self.current_contact = {}
+        self.saved_contacts = {}
 
-    def add_phone_number(self, phone_number: str):
-        ...
+    def get_contacts(self, chat_id):
+        if chat_id not in self.saved_contacts:
+            return []
+        return self.saved_contacts[chat_id].get_contacts()
 
-    def add_description(self, description: str):
-        ...
+    def add_name(self, chat_id, name: str):
+        self.current_contact[chat_id] = UserContact(name)
 
-    def commit(self):
-        ...
-        
+    def add_phone_number(self, chat_id, phone_number: str):
+        self.current_contact[chat_id].set_phone_number(phone_number)
+
+    def add_description(self, chat_id, description: str):
+        self.current_contact[chat_id].set_description(description)
+
+    def build(self, chat_id):
+        current_contact = self.current_contact[chat_id]
+
+        if chat_id not in self.saved_contacts:
+            self.saved_contacts[chat_id] = ContactBook()
+
+        self.saved_contacts[chat_id].add_contact(current_contact)
+
+        del self.current_contact[chat_id]
